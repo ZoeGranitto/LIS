@@ -59,12 +59,12 @@ varParser = do v <- identifier lis
 
 varIncParser :: Parser (Exp Int)
 varIncParser = do v <- identifier lis
-                  symbol "++"
+                  reservedOpNames lis "++"
                   return (VarInc v)
 
 varDecParser :: Parser (Exp Int)
 varDecParser = do v <- identifier lis
-                  symbol "--"
+                  reservedOpNames lis "--"
                   return (VarDec v)
 
 variableParser :: Parser (Exp Int)
@@ -74,91 +74,90 @@ variableParser = try varInc <|> try varDecParser <|> varParser
 
 uminusParser :: Parser (Exp Int)
 uminusParser = do 
-		reservedOp lis "-" --(este parser devuelve -)
-		e <- natParser --( e :: Exp Int)
+		reservedOpNames lis "-"
+		e <- natParser 
 		return (UMinus e)
 
 plusOp :: Parser (Exp Int -> Exp Int -> Exp Int)
 plusOp = do 
-    reservedOp lis "+"
+    reservedOpNames lis "+"
     return Plus
 
 minusOp :: Parser (Exp Int -> Exp Int -> Exp Int)
 minusOp = do 
-    reservedOp lis "-"
+    reservedOpNames lis "-"
     return Minus
 
 timesOp  :: Parser (Exp Int -> Exp Int -> Exp Int)
 timesOp = do 
-    reservedOp lis "*"
+    reservedOpNames lis "*"
     return Times
 
 divOp :: Parser (Exp Int -> Exp Int -> Exp Int)
 divOp = do 
-    reservedOp lis "/"
+    reservedOpNames lis "/"
     return Div
 
 varincOp :: Parser (Exp Int -> Exp Int)
 varinc = do 
-    reservedOp lis "++"
+    reservedOpNames lis "++"
     return VarInc
 
 vardecOp :: Parser (Exp Int -> Exp Int)
 vardec = do 
-    reservedOp lis "--"
+    reservedOpNames lis "--"
     return VarDec 
 
 seqOp :: Parser (Comm -> Comm -> Comm)
-seqOp = do reservedOp lis ";"
+seqOp = do reservedOpNames lis ";"
            return Seq
 
 skipOp :: Parser Comm
-skipOp = do reservedOp lis "skip"
+skipOp = do reservedNames lis "skip"
             return Skip
 
 repeatUntil :: Parser Comm
 repeatUntil = do
-  symbol "repeat"
+  reservedNames  "repeat"
   c <- comm  -- Parser del comando dentro del repeat
-  symbol "until"
+  reservedNames "until"
   cond <- expr -- Parser de la condición booleana
   return (RepeatUntil c cond)
 
 ifThenElse :: Parser Comm
-ifThenElse = do symbol "if"
+ifThenElse = do reservedNames "if"
                 e <- negexpr
-                symbol "then"
                 c1 <- comm
-                symbol "else"
+                reservedNames "else"
                 c2 <- comm
                 return (IfThenElse e c1 c2)
 
 eqOp :: Parser (Exp -> Exp -> Exp)
-eqOp = do symbol "=="
+eqOp = do reservedOpNames "=="
            return Eq
 
 ltOp :: Parser (Exp -> Exp -> Exp)
-ltOp = do symbol "<"
+ltOp = do reservedOpNames "<"
            return Lt
 
 gtOp :: Parser (Exp -> Exp -> Exp)
-gtOp = do symbol ">"
+gtOp = do reservedOpNames ">"
            return Gt
 
 neqOp :: Parser (Exp -> Exp -> Exp)
-neqOp = do symbol "!="
+neqOp = do reservedOpNames "!="
               return NEq
 
 andOp :: Parser (Exp -> Exp -> Exp)
-andOp = do symbol "&&"
+andOp = do reservedOpNames "&&"
           return And
 
 orOp :: Parser (Exp -> Exp -> Exp)
-orOp = do symbol "||"
+orOp = do reservedOpNames "||"
          return Or
 
 notOp :: Parser (Exp -> Exp)
-notOp = do symbol "!"
+notOp = do reservedOpNames "!"
          return Not
 
 -----------------------------------
