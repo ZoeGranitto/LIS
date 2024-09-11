@@ -46,15 +46,36 @@ lis = makeTokenParser
 -----------------------------------
 --- Parsers aux
 -----------------------------------
+
+-- lo saque de parsing.lhs
+natParser :: Parser (Exp Int)
+natParser = do xs <- many1 digit
+               n <- read xs
+               return (Const n)
+
+varParser :: Parser (Exp Int)
+varParser = do v <- identifier lis 
+		                return (Var v)
+
+varIncParser :: Parser (Exp Int)
+varIncParser = do v <- identifier lis
+                  symbol "++"
+                  return (VarInc v)
+
+varDecParser :: Parser (Exp Int)
+varDecParser = do v <- identifier lis
+                  symbol "--"
+                  return (VarDec v)
+
 variableParser :: Parser (Exp Int)
-variableParser = do
-		   v <- identifier lis 
-		   return (Var v)
+variableParser = try varInc <|> try varDecParser <|> varParser
+-- en el utlimo hace falta el try? o los va chequeando en orden?
+-- capaz directamente ahi puedo meter la el do <- ident... y no hacerlo aparte
 
 uminusParser :: Parser (Exp Int)
 uminusParser = do 
-		reservedOp lis "-" (este parser devuelve -)
-		e <- .... ( e :: Exp Int)
+		reservedOp lis "-" --(este parser devuelve -)
+		e <- natParser --( e :: Exp Int)
 		return (UMinus e)
 
 plusOp :: Parser (Exp Int -> Exp Int -> Exp Int)
@@ -87,13 +108,72 @@ vardec = do
     reservedOp lis "--"
     return VarDec 
 
+seqOp :: Parser (Comm -> Comm -> Comm)
+seqOp = do reservedOp lis ";"
+           return Seq
+
+skipOp :: Parser Comm
+skipOp = do reservedOp lis "skip"
+            return Skip
+
+repeatUntil :: Parser Comm
+repeatUntil = do
+  symbol "repeat"
+  c <- comm  -- Parser del comando dentro del repeat
+  symbol "until"
+  cond <- expr -- Parser de la condición booleana
+  return (RepeatUntil c cond)
+
+ifThenElse :: Parser Comm
+ifThenElse = do symbol "if"
+                e <- negexpr
+                symbol "then"
+                c1 <- comm
+                symbol "else"
+                c2 <- comm
+                return (IfThenElse e c1 c2)
+
+eqOp :: Parser (Exp -> Exp -> Exp)
+eqOp = do symbol "=="
+           return Eq
+
+ltOp :: Parser (Exp -> Exp -> Exp)
+ltOp = do symbol "<"
+           return Lt
+
+gtOp :: Parser (Exp -> Exp -> Exp)
+gtOp = do symbol ">"
+           return Gt
+
+neqOp :: Parser (Exp -> Exp -> Exp)
+neqOp = do symbol "!="
+              return NEq
+
+andOp :: Parser (Exp -> Exp -> Exp)
+andOp = do symbol "&&"
+          return And
+
+orOp :: Parser (Exp -> Exp -> Exp)
+orOp = do symbol "||"
+         return Or
+
+notOp :: Parser (Exp -> Exp)
+notOp = do symbol "!"
+         return Not
+
 -----------------------------------
 --- Parser de expresiones enteras
 -----------------------------------
-intfactor ::
-intfactor = 
 
-intterm :: 
+-- aca dnde corno meto las variables?
+-- eso va? o es cualk?
+intvar :: Parser (Exp Int)
+intvar = chainl1 natParser variableParser
+
+intfactor :: Parser (Exp Int)
+intfactor = uminusParser <|> intvar 
+
+intterm :: Parser (Exp Int)
 intterm = chainl1 intfactor (timesOp <|> divOp)
 
 intexp :: Parser (Exp Int)
@@ -102,16 +182,31 @@ intexp = chainl1 intterm (plusOp <|> minusOp)
 ------------------------------------
 --- Parser de expresiones booleanas
 ------------------------------------
+-- no se si este va a funcar por el tema de (exp int) y (exp bool)
+compexp :: Parser (Exp Bool)
+compexp = chainl1 intexp (ltOp <|> gtOp <|> eqOp <|> neqOp)
+
+boolfactor :: Parser (Exp Bool)
+boolfactor = compexp <|> notOp
+
+boolterm :: Parser (Exp Bool)
+boolterm = chainl1 boolfactor andOp
 
 boolexp :: Parser (Exp Bool)
-boolexp = undefined
+boolexp = chainl1 boolterm orOp
 
 -----------------------------------
 --- Parser de comandos
 -----------------------------------
+-- Parser general para comandos
+command :: Parser Comm
+command = skipParser
+      <|> letin
+      <|> repeatUntil
+      <|> ifThenElse
 
 comm :: Parser Comm
-comm = undefined
+comm = chainl1 command seqOp
 
 ------------------------------------
 -- Función de parseo para tests

@@ -1,4 +1,5 @@
 module AST where
+{-# LANGUAGE PatternSynonyms #-}
 
 -- Identificadores de Variable
 type Variable = String
@@ -40,7 +41,7 @@ data Comm
   | RepeatUntil Comm (Exp Bool)
   deriving (Show, Eq)
 
-pattern IfThen :: Exp Bool -> Comm -> Comm
+pattern IfThen :: (Exp Bool) -> Comm -> Comm
 pattern IfThen b c = IfThenElse b c Skip
 
 data Error = DivByZero | UndefVar deriving (Eq, Show)
