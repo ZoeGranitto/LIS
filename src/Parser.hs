@@ -81,8 +81,7 @@ notParser = do reservedOp lis "!"
 --- Parsers auxiliares para Comm
 ---------------------------------
 skip :: Parser Comm
-skip = do reservedOp lis "skip"
-          return Skip
+skip = do reservedOp lis "skip"; return Skip
 
 repeatUntil :: Parser Comm
 repeatUntil = do
@@ -119,16 +118,13 @@ timesDivOp  = do { reservedOp lis "*"; return Times }
           <|> do { reservedOp lis "/"; return Div   }
 
 andOp :: Parser (Exp Bool -> Exp Bool -> Exp Bool)
-andOp = do reservedOp lis "&&"
-           return And
+andOp = do reservedOp lis "&&"; return And
 
 orOp :: Parser (Exp Bool -> Exp Bool -> Exp Bool)
-orOp = do reservedOp lis "||"
-          return Or
+orOp = do reservedOp lis "||"; return Or
 
 seqOp :: Parser (Comm -> Comm -> Comm)
-seqOp = do reservedOp lis ";"
-           return Seq
+seqOp = do reservedOp lis ";"; return Seq
 
 compOp :: Parser (Exp Int -> Exp Int -> Exp Bool)
 compOp = do { reservedOp lis "=="; return Eq  }
