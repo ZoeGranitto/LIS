@@ -50,7 +50,7 @@ lis = makeTokenParser
 -- lo saque de parsing.lhs
 natParser :: Parser (Exp Int)
 natParser = do xs <- many1 digit
-               n <- read xs
+               n <- read xs -- toma xs (cadena) y lo vuelve un numero 
                return (Const n)
 
 varParser :: Parser (Exp Int)
