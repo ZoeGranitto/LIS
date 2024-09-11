@@ -49,128 +49,126 @@ lis = makeTokenParser
 
 -- lo saque de parsing.lhs
 natParser :: Parser (Exp Int)
-natParser = do xs <- many1 digit
-               n <- read xs -- toma xs (cadena) y lo vuelve un numero 
-               return (Const n)
+natParser = do n <- natural lis
+               return (Const (fromInteger n))
 
 varParser :: Parser (Exp Int)
 varParser = do v <- identifier lis 
-		                return (Var v)
+               return (Var v)
 
 varIncParser :: Parser (Exp Int)
-varIncParser = do v <- identifier lis
-                  reservedOpNames lis "++"
+varIncParser = do v <- varParser
+                  reservedOp lis "++"
                   return (VarInc v)
 
 varDecParser :: Parser (Exp Int)
-varDecParser = do v <- identifier lis
-                  reservedOpNames lis "--"
+varDecParser = do v <- varParser
+                  reservedOp lis "--"
                   return (VarDec v)
 
 variableParser :: Parser (Exp Int)
-variableParser = try varInc <|> try varDecParser <|> varParser
+variableParser = try varIncParser <|> try varDecParser <|> varParser
 -- en el utlimo hace falta el try? o los va chequeando en orden?
 -- capaz directamente ahi puedo meter la el do <- ident... y no hacerlo aparte
 
 uminusParser :: Parser (Exp Int)
-uminusParser = do 
-		reservedOpNames lis "-"
-		e <- natParser 
-		return (UMinus e)
+uminusParser = do reservedOp lis "-"
+                  e <- intexp
+                  return (UMinus e)
 
 plusOp :: Parser (Exp Int -> Exp Int -> Exp Int)
-plusOp = do 
-    reservedOpNames lis "+"
-    return Plus
+plusOp = do reservedOp lis "+"
+            return Plus
 
 minusOp :: Parser (Exp Int -> Exp Int -> Exp Int)
-minusOp = do 
-    reservedOpNames lis "-"
-    return Minus
+minusOp = do reservedOp lis "-"
+             return Minus
 
 timesOp  :: Parser (Exp Int -> Exp Int -> Exp Int)
-timesOp = do 
-    reservedOpNames lis "*"
-    return Times
+timesOp = do reservedOp lis "*"
+             return Times
 
 divOp :: Parser (Exp Int -> Exp Int -> Exp Int)
-divOp = do 
-    reservedOpNames lis "/"
-    return Div
-
-varincOp :: Parser (Exp Int -> Exp Int)
-varinc = do 
-    reservedOpNames lis "++"
-    return VarInc
-
-vardecOp :: Parser (Exp Int -> Exp Int)
-vardec = do 
-    reservedOpNames lis "--"
-    return VarDec 
+divOp = do reservedOp lis "/"
+           return Div
 
 seqOp :: Parser (Comm -> Comm -> Comm)
-seqOp = do reservedOpNames lis ";"
+seqOp = do reservedOp lis ";"
            return Seq
 
+------------------------------------------
+
 skipOp :: Parser Comm
-skipOp = do reservedNames lis "skip"
+skipOp = do reservedOp lis "skip"
             return Skip
 
 repeatUntil :: Parser Comm
 repeatUntil = do
-  reservedNames  "repeat"
-  c <- comm  -- Parser del comando dentro del repeat
-  reservedNames "until"
-  cond <- expr -- Parser de la condición booleana
+  reservedOp lis "repeat"
+  c <- braces lis comm  -- Parser del comando dentro del repeat
+  reservedOp lis "until"
+  cond <- boolexp -- Parser de la condición booleana
   return (RepeatUntil c cond)
 
 ifThenElse :: Parser Comm
-ifThenElse = do reservedNames "if"
-                e <- negexpr
-                c1 <- comm
-                reservedNames "else"
-                c2 <- comm
-                return (IfThenElse e c1 c2)
+ifThenElse = do reservedOp lis "if"
+                e <- boolexp
+                c1 <- braces lis comm
+                do reservedOp lis "else" 
+                   c2 <- braces lis comm
+                   return (IfThenElse e c1 c2)
+                   <|> return (IfThenElse e c1 Skip)
 
-eqOp :: Parser (Exp -> Exp -> Exp)
-eqOp = do reservedOpNames "=="
-           return Eq
+letIn:: Parser Comm
+letIn = do v <- identifier lis
+           reservedOp lis "="
+           u <- intexp
+           return (Let v u)
+------------------------------------------------------
 
-ltOp :: Parser (Exp -> Exp -> Exp)
-ltOp = do reservedOpNames "<"
-           return Lt
+eqOp :: Parser (Exp Bool)
+eqOp = do a <- intexp
+          reservedOp lis "=="
+          b <- intexp
+          return (Eq a b)
 
-gtOp :: Parser (Exp -> Exp -> Exp)
-gtOp = do reservedOpNames ">"
-           return Gt
+ltOp :: Parser (Exp Bool)
+ltOp = do a <- intexp
+          reservedOp lis "<"
+          b <- intexp
+          return (Lt a b)
 
-neqOp :: Parser (Exp -> Exp -> Exp)
-neqOp = do reservedOpNames "!="
-              return NEq
+gtOp :: Parser (Exp Bool)
+gtOp = do a <- intexp
+          reservedOp lis ">"
+          b <- intexp
+          return (Gt a b)
 
-andOp :: Parser (Exp -> Exp -> Exp)
-andOp = do reservedOpNames "&&"
-          return And
+neqOp :: Parser (Exp Bool)
+neqOp = do a <- intexp
+           reservedOp lis "!="
+           b <- intexp
+           return (NEq a b)
 
-orOp :: Parser (Exp -> Exp -> Exp)
-orOp = do reservedOpNames "||"
-         return Or
+andOp :: Parser (Exp Bool -> Exp Bool -> Exp Bool)
+andOp = do reservedOp lis "&&"
+           return And
 
-notOp :: Parser (Exp -> Exp)
-notOp = do reservedOpNames "!"
-         return Not
+orOp :: Parser (Exp Bool -> Exp Bool -> Exp Bool)
+orOp = do reservedOp lis "||"
+          return Or
+
+notOp :: Parser (Exp Bool)
+notOp = do reservedOp lis "!"
+           b <- boolexp
+           return (Not b)
 
 -----------------------------------
 --- Parser de expresiones enteras
 -----------------------------------
 
--- aca dnde corno meto las variables?
--- eso va? o es cualk?
-intvar :: Parser (Exp Int)
-intvar = chainl1 natParser variableParser
-
 intfactor :: Parser (Exp Int)
-intfactor = uminusParser <|> intvar 
+intfactor = uminusParser <|> (natParser <|> variableParser) <|> parens lis intexp
 
 intterm :: Parser (Exp Int)
 intterm = chainl1 intfactor (timesOp <|> divOp)
@@ -182,11 +180,14 @@ intexp = chainl1 intterm (plusOp <|> minusOp)
 --- Parser de expresiones booleanas
 ------------------------------------
 -- no se si este va a funcar por el tema de (exp int) y (exp bool)
-compexp :: Parser (Exp Bool)
-compexp = chainl1 intexp (ltOp <|> gtOp <|> eqOp <|> neqOp)
+comp :: Parser (Exp Bool)
+comp = ltOp
+      <|> gtOp
+      <|> eqOp
+      <|> neqOp
 
 boolfactor :: Parser (Exp Bool)
-boolfactor = compexp <|> notOp
+boolfactor = notOp <|> comp <|> parens lis boolexp
 
 boolterm :: Parser (Exp Bool)
 boolterm = chainl1 boolfactor andOp
@@ -199,8 +200,8 @@ boolexp = chainl1 boolterm orOp
 -----------------------------------
 -- Parser general para comandos
 command :: Parser Comm
-command = skipParser
-      <|> letin
+command = skipOp
+      <|> letIn
       <|> repeatUntil
       <|> ifThenElse
 
@@ -210,13 +211,13 @@ comm = chainl1 command seqOp
 ------------------------------------
 -- Función de parseo para tests
 ------------------------------------
-parseIntExp :: SourceName -> String -> Either ParseError Exp
+parseIntExp :: SourceName -> String -> Either ParseError (Exp Int)
 parseIntExp = parse (totParser intexp)
 
 ------------------------------------
 -- Función de parseo para tests
 ------------------------------------
-parseBoolExp :: SourceName -> String -> Either ParseError Exp
+parseBoolExp :: SourceName -> String -> Either ParseError (Exp Bool)
 parseBoolExp = parse (totParser boolexp)
 
 ------------------------------------

@@ -1,0 +1,28 @@
+/home/zoe/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/rts-1.0.2/include/ghcversion.h:
+  hash: 9032f6afc97dcddfe8c8b306639eb6f456e3f6667f3dd8268681f51bb77c8634
+? /home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/.stack-work/dist/x86_64-linux-tinfo6/ghc-9.6.6/build/autogen/Paths_TP1.hs
+: hash: c890ddc501c8a4cd78b3dda5b7b305f780c8e4fa41414f054c357611d60cbb3f
+? /home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/.stack-work/dist/x86_64-linux-tinfo6/ghc-9.6.6/build/autogen/cabal_macros.h
+: hash: a6eef655f6c2c3f80d708b0ad97f768ae27887f86a43072b425c2296a74fbee8
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/CHANGELOG.md:
+  hash: 4d3313936a46bb30918048b369fb6aa8d4103afefb7b7a48ffbfb0d9806f3d6b
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/README.md:
+  hash: 8c50b647de6f8d234b50e47ecee815c185818dff55a5323a08828dd22c247648
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/TP1.cabal:
+  hash: f15ad80637afff84b758a1e961622e513ea5e72203ddb625d63af412671e7ac2
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/package.yaml:
+  hash: 8f10c45f5cc8350b81b12753a629ffde2dbf8f9eb1eb715011e140e977b581d9
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/src/AST.hs:
+  hash: f6e7405554d071f8dee4d7178ca8c6557a39bfea994165a13569925277a41816
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/src/Eval1.hs:
+  hash: 503f3de110316a34a2740e00a53772f8af5c575bbfb51a421d4ae2325957c3e8
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/src/Eval2.hs:
+  hash: c10cef9b0b1a3fbd19af7bf675c307351b89f38de7b340fea7d58ee722714c03
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/src/Eval3.hs:
+  hash: f930f51958a9c3831a784d118e349ff65ba7eed57ced56a13410521284ac85ef
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/src/PPLis.hs:
+  hash: 0971c53acf28a239b1f0a77469057494037933ea10d44bf22268e21136086880
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/src/Parser.hs:
+  hash: f9ade2766a2e249114de2f80dc795191a317445150f86d12dde629879878c2b2
+/usr/include/stdc-predef.h:
+  hash: cb08cd5d4cc059a90833ac48a284d25016e8d56ded8ad4cd98d8ac59cc5053f3
