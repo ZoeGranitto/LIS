@@ -44,10 +44,8 @@ lis = makeTokenParser
   )
 
 -----------------------------------
---- Parsers aux
+--- Parsers auxiliares para Exp Int
 -----------------------------------
-
--- lo saque de parsing.lhs
 natParser :: Parser (Exp Int)
 natParser = do n <- natural lis
                return (Const (fromInteger n))
@@ -56,51 +54,35 @@ varParser :: Parser (Exp Int)
 varParser = do v <- identifier lis 
                return (Var v)
 
-varIncParser :: Parser (Exp Int)
-varIncParser = do v <- varParser
-                  reservedOp lis "++"
-                  return (VarInc v)
-
-varDecParser :: Parser (Exp Int)
-varDecParser = do v <- varParser
-                  reservedOp lis "--"
-                  return (VarDec v)
+varIncDecParser :: Parser (Exp Int)
+varIncDecParser = do v <- varParser
+                     do reservedOp lis "++"
+                        return (VarInc v)
+                        <|> do reservedOp lis "--"
+                               return (VarDec v)
 
 variableParser :: Parser (Exp Int)
-variableParser = try varIncParser <|> try varDecParser <|> varParser
--- en el utlimo hace falta el try? o los va chequeando en orden?
--- capaz directamente ahi puedo meter la el do <- ident... y no hacerlo aparte
+variableParser = try varIncDecParser <|> varParser
 
 uminusParser :: Parser (Exp Int)
 uminusParser = do reservedOp lis "-"
                   e <- intexp
                   return (UMinus e)
 
-plusOp :: Parser (Exp Int -> Exp Int -> Exp Int)
-plusOp = do reservedOp lis "+"
-            return Plus
+------------------------------------
+--- Parsers auxiliares para Exp Bool
+------------------------------------
+notParser :: Parser (Exp Bool)
+notParser = do reservedOp lis "!"
+               b <- boolexp
+               return (Not b)
 
-minusOp :: Parser (Exp Int -> Exp Int -> Exp Int)
-minusOp = do reservedOp lis "-"
-             return Minus
-
-timesOp  :: Parser (Exp Int -> Exp Int -> Exp Int)
-timesOp = do reservedOp lis "*"
-             return Times
-
-divOp :: Parser (Exp Int -> Exp Int -> Exp Int)
-divOp = do reservedOp lis "/"
-           return Div
-
-seqOp :: Parser (Comm -> Comm -> Comm)
-seqOp = do reservedOp lis ";"
-           return Seq
-
-------------------------------------------
-
-skipOp :: Parser Comm
-skipOp = do reservedOp lis "skip"
-            return Skip
+---------------------------------
+--- Parsers auxiliares para Comm
+---------------------------------
+skip :: Parser Comm
+skip = do reservedOp lis "skip"
+          return Skip
 
 repeatUntil :: Parser Comm
 repeatUntil = do
@@ -117,38 +99,24 @@ ifThenElse = do reservedOp lis "if"
                 do reservedOp lis "else" 
                    c2 <- braces lis comm
                    return (IfThenElse e c1 c2)
-                   <|> return (IfThenElse e c1 Skip)
+                   <|> return (IfThen e c1)
 
 letIn:: Parser Comm
 letIn = do v <- identifier lis
            reservedOp lis "="
            u <- intexp
            return (Let v u)
-------------------------------------------------------
 
-eqOp :: Parser (Exp Bool)
-eqOp = do a <- intexp
-          reservedOp lis "=="
-          b <- intexp
-          return (Eq a b)
+-----------------------------------
+--- Funciones que reconocen operadores
+-----------------------------------
+plusMinusOp :: Parser (Exp Int -> Exp Int -> Exp Int)
+plusMinusOp = do { reservedOp lis "+"; return Plus  }
+          <|> do { reservedOp lis "-"; return Minus }
 
-ltOp :: Parser (Exp Bool)
-ltOp = do a <- intexp
-          reservedOp lis "<"
-          b <- intexp
-          return (Lt a b)
-
-gtOp :: Parser (Exp Bool)
-gtOp = do a <- intexp
-          reservedOp lis ">"
-          b <- intexp
-          return (Gt a b)
-
-neqOp :: Parser (Exp Bool)
-neqOp = do a <- intexp
-           reservedOp lis "!="
-           b <- intexp
-           return (NEq a b)
+timesDivOp :: Parser (Exp Int -> Exp Int -> Exp Int)
+timesDivOp  = do { reservedOp lis "*"; return Times }
+          <|> do { reservedOp lis "/"; return Div   }
 
 andOp :: Parser (Exp Bool -> Exp Bool -> Exp Bool)
 andOp = do reservedOp lis "&&"
@@ -158,36 +126,42 @@ orOp :: Parser (Exp Bool -> Exp Bool -> Exp Bool)
 orOp = do reservedOp lis "||"
           return Or
 
-notOp :: Parser (Exp Bool)
-notOp = do reservedOp lis "!"
-           b <- boolexp
-           return (Not b)
+seqOp :: Parser (Comm -> Comm -> Comm)
+seqOp = do reservedOp lis ";"
+           return Seq
+
+compOp :: Parser (Exp Int -> Exp Int -> Exp Bool)
+compOp = do { reservedOp lis "=="; return Eq  }
+     <|> do { reservedOp lis "!="; return NEq }
+     <|> do { reservedOp lis "<" ; return Lt  }
+     <|> do { reservedOp lis ">" ; return Gt  }
 
 -----------------------------------
 --- Parser de expresiones enteras
 -----------------------------------
-
 intfactor :: Parser (Exp Int)
-intfactor = uminusParser <|> (natParser <|> variableParser) <|> parens lis intexp
+intfactor = parens lis intexp 
+            <|> uminusParser 
+            <|> natParser 
+            <|> variableParser
 
 intterm :: Parser (Exp Int)
-intterm = chainl1 intfactor (timesOp <|> divOp)
+intterm = chainl1 intfactor timesDivOp
 
 intexp :: Parser (Exp Int)
-intexp = chainl1 intterm (plusOp <|> minusOp)
+intexp = chainl1 intterm plusMinusOp
 
 ------------------------------------
 --- Parser de expresiones booleanas
 ------------------------------------
--- no se si este va a funcar por el tema de (exp int) y (exp bool)
-comp :: Parser (Exp Bool)
-comp = ltOp
-      <|> gtOp
-      <|> eqOp
-      <|> neqOp
+comparisons :: Parser (Exp Bool)
+comparisons = do a <- intexp
+                 operator <- compOp
+                 b <- intexp
+                 return (operator a b)
 
 boolfactor :: Parser (Exp Bool)
-boolfactor = notOp <|> comp <|> parens lis boolexp
+boolfactor = notParser <|> comparisons
 
 boolterm :: Parser (Exp Bool)
 boolterm = chainl1 boolfactor andOp
@@ -200,7 +174,7 @@ boolexp = chainl1 boolterm orOp
 -----------------------------------
 -- Parser general para comandos
 command :: Parser Comm
-command = skipOp
+command = skip
       <|> letIn
       <|> repeatUntil
       <|> ifThenElse
