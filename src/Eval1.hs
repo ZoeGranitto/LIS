@@ -75,7 +75,7 @@ repeatComm c b s = let (b' :!: s') = evalExp b s
 evalExp :: Exp a -> State -> Pair a State
 evalExp BTrue         s = (True  :!: s)
 evalExp BFalse        s = (False :!: s)
-evalExp (Not p)       s = (not b :!: s') where (b :!: s') = evalExp p s
+evalExp (Not p)       s = (!b :!: s') where (b :!: s') = evalExp p s
 evalExp (Const  n)    s = (n :!: s) 
 evalExp (Var    x)    s = (lookfor x s :!: s) 
 evalExp (UMinus e)    s = (-n :!: s') where (n :!: s') = evalExp e s
@@ -89,8 +89,8 @@ evalExp (Plus  e0 e1) s = auxEvalExp e0 e1 s (+ )
 evalExp (Minus e0 e1) s = auxEvalExp e0 e1 s (-)
 evalExp (Times e0 e1) s = auxEvalExp e0 e1 s (*)
 evalExp (Div   e0 e1) s = auxEvalExp e0 e1 s (div)
---evalExp (VarInc e)   s = (n :!: s) -- HACER 
---evalExp (VarDec e)   s = (n :!: s) -- HACER 
+evalExp (VarInc e)    s = (n+1 :!: s') where (n :!: s') = evalExp e s
+evalExp (VarDec e)    s = (n-1 :!: s') where (n :!: s') = evalExp e s
 
 auxEvalExp a b s f = let (n0 :!: s') = evalExp a s
                          (n1 :!: s'') = evalExp b s'
