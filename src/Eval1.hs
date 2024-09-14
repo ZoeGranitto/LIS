@@ -5,7 +5,7 @@ module Eval1
 where
 
 import           AST
-import qualified Data.Map.Strict               as M
+import qualified Data.Map.Strict as M
 import           Data.Strict.Tuple
 
 -- Estados
@@ -70,10 +70,12 @@ ifThenElseComm b c0 c1 s = let (b' :!: s') = evalExp b s
 evalExp :: Exp a -> State -> Pair a State
 evalExp BTrue         s = (True  :!: s)
 evalExp BFalse        s = (False :!: s)
-evalExp (Not p)       s = (not b :!: s') where (b :!: s') = evalExp p s
 evalExp (Const  n)    s = (n :!: s) 
 evalExp (Var    x)    s = (lookfor x s :!: s) 
-evalExp (UMinus e)    s = (-n :!: s') where (n :!: s') = evalExp e s
+evalExp (Not p)       s = (not b :!: s') where (b :!: s') = evalExp p s
+evalExp (UMinus e)    s = (-n :!: s')    where (n :!: s') = evalExp e s
+evalExp (VarInc x)    s = incDecExp x (+) s
+evalExp (VarDec x)    s = incDecExp x (-) s
 evalExp (Lt  e0 e1)   s = auxEvalExp e0 e1 s (<)
 evalExp (Gt  e0 e1)   s = auxEvalExp e0 e1 s (>)
 evalExp (Eq  e0 e1)   s = auxEvalExp e0 e1 s (==)
@@ -84,9 +86,13 @@ evalExp (Plus  e0 e1) s = auxEvalExp e0 e1 s (+ )
 evalExp (Minus e0 e1) s = auxEvalExp e0 e1 s (-)
 evalExp (Times e0 e1) s = auxEvalExp e0 e1 s (*)
 evalExp (Div   e0 e1) s = auxEvalExp e0 e1 s (div)
-evalExp (VarInc e)    s = (n+1 :!: s') where (n :!: s') = evalExp e s
-evalExp (VarDec e)    s = (n-1 :!: s') where (n :!: s') = evalExp e s
 
+auxEvalExp :: Exp a -> Exp a -> State -> (a -> a -> b) -> Pair b State
 auxEvalExp a b s f = let (n0 :!: s') = evalExp a s
                          (n1 :!: s'') = evalExp b s'
                      in ((f n0 n1) :!: s'')
+
+incDecExp :: Variable -> (Int -> Int -> Int) -> State -> Pair Int State
+incDecExp k f s = let v = lookfor k s
+                      v' = (f v 1) 
+                  in (v' :!: update k v' s)

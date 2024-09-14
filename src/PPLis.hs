@@ -20,8 +20,8 @@ pExp (Plus  a b) = pExp a <+> text "+" <+> pExp b
 pExp (Times a b) = pExpMaybeParen a <+> text "*" <+> pExpMaybeParen b
 pExp (Minus a b) = pExp a <+> text "-" <+> pExpMaybeParen b
 pExp (Div   a b) = pExpMaybeParen a <+> text "/" <+> pExpMaybeParen b
-pExp (VarDec n)  = pExp n <+> text "--"
-pExp (VarInc n)  = pExp n <+> text "++"
+pExp (VarDec x)  = pVar x <+> text "--"
+pExp (VarInc x)  = pVar x <+> text "++"
 pExp BTrue       = text "true"
 pExp BFalse      = text "false"
 pExp (Eq  a b)   = pExp a <+> text "==" <+> pExp b

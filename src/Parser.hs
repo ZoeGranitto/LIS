@@ -55,7 +55,7 @@ varParser = do v <- identifier lis
                return (Var v)
 
 varIncDecParser :: Parser (Exp Int)
-varIncDecParser = do v <- varParser
+varIncDecParser = do (Var v) <- varParser
                      do reservedOp lis "++"
                         return (VarInc v)
                         <|> do reservedOp lis "--"
@@ -182,18 +182,6 @@ command = skip
 
 comm :: Parser Comm
 comm = chainl1 command seqOp
-
-------------------------------------
--- Función de parseo para tests
-------------------------------------
-parseIntExp :: SourceName -> String -> Either ParseError (Exp Int)
-parseIntExp = parse (totParser intexp)
-
-------------------------------------
--- Función de parseo para tests
-------------------------------------
-parseBoolExp :: SourceName -> String -> Either ParseError (Exp Bool)
-parseBoolExp = parse (totParser boolexp)
 
 ------------------------------------
 -- Función de parseo
