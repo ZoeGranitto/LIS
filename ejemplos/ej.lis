@@ -1,1 +1,1 @@
-x = 5; if (x == 4) {skip}
+skip; s = 2; if ((1 < 4) && true || false) {skip}

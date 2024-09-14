@@ -136,10 +136,10 @@ compOp = do { reservedOp lis "=="; return Eq  }
 --- Parser de expresiones enteras
 -----------------------------------
 intfactor :: Parser (Exp Int)
-intfactor = parens lis intexp 
-            <|> uminusParser 
-            <|> natParser 
-            <|> variableParser
+intfactor = try (parens lis intexp)
+            <|> try uminusParser 
+            <|> try natParser 
+            <|> try variableParser
 
 intterm :: Parser (Exp Int)
 intterm = chainl1 intfactor timesDivOp
@@ -157,7 +157,12 @@ comparisons = do a <- intexp
                  return (operator a b)
 
 boolfactor :: Parser (Exp Bool)
-boolfactor = notParser <|> comparisons
+boolfactor = try notParser 
+         <|> try comparisons 
+         <|> try (parens lis boolexp) 
+         <|> do reservedOp lis "true"; return BTrue
+         <|> do reservedOp lis "false"; return BFalse
+
 
 boolterm :: Parser (Exp Bool)
 boolterm = chainl1 boolfactor andOp
