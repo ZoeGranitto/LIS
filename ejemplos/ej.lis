@@ -1,1 +1,1 @@
-skip; s = 2; if ((1 < 4) && true || false) {skip}
+v = 3; if v == 2 {skip} else {w = 5}

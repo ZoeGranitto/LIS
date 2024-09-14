@@ -84,13 +84,14 @@ evalExp (Gt  e0 e1)   s = auxEvalExp e0 e1 s (>)
 evalExp (Eq  e0 e1)   s = auxEvalExp e0 e1 s (==)
 evalExp (NEq e0 e1)   s = auxEvalExp e0 e1 s (/=)
 evalExp (And p0 p1)   s = auxEvalExp p0 p1 s (&&)
-evalExp (Or  p0 p1)   s = auxEvalExp p0 p1 s (|| )
-evalExp (Plus  e0 e1) s = auxEvalExp e0 e1 s (+  )
+evalExp (Or  p0 p1)   s = auxEvalExp p0 p1 s (||)
+evalExp (Plus  e0 e1) s = auxEvalExp e0 e1 s (+ )
 evalExp (Minus e0 e1) s = auxEvalExp e0 e1 s (-)
 evalExp (Times e0 e1) s = auxEvalExp e0 e1 s (*)
 evalExp (Div   e0 e1) s = auxEvalExp e0 e1 s (div)
 --evalExp (VarInc e)   s = (n :!: s) -- HACER 
 --evalExp (VarDec e)   s = (n :!: s) -- HACER 
 
-auxEvalExp a b s f = ((f n0 n1) :!: s'') 
-                    where ((n0 :!: s'), (n1 :!: s'')) = (evalExp a s, evalExp b s')
+auxEvalExp a b s f = let (n0 :!: s') = evalExp a s
+                         (n1 :!: s'') = evalExp b s'
+                     in ((f n0 n1) :!: s'')
