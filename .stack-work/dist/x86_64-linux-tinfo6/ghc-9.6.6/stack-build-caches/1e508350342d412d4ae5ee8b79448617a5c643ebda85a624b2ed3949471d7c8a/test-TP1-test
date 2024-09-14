@@ -1,0 +1,22 @@
+/home/zoe/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/rts-1.0.2/include/ghcversion.h:
+  hash: 9032f6afc97dcddfe8c8b306639eb6f456e3f6667f3dd8268681f51bb77c8634
+? /home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/.stack-work/dist/x86_64-linux-tinfo6/ghc-9.6.6/build/TP1-test/autogen/Paths_TP1.hs
+: hash: d16fe196817ec7ccac18d4c1057d369f11b47a1dfdc799f7d7ab69d8112c6ccb
+? /home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/.stack-work/dist/x86_64-linux-tinfo6/ghc-9.6.6/build/TP1-test/autogen/cabal_macros.h
+: hash: 1ac6706efcbba83f279e63f0c21bfdaf5e336dd4809a7b1805ce920db3efc71f
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/CHANGELOG.md:
+  hash: 4d3313936a46bb30918048b369fb6aa8d4103afefb7b7a48ffbfb0d9806f3d6b
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/README.md:
+  hash: 8c50b647de6f8d234b50e47ecee815c185818dff55a5323a08828dd22c247648
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/TP1.cabal:
+  hash: f15ad80637afff84b758a1e961622e513ea5e72203ddb625d63af412671e7ac2
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/package.yaml:
+  hash: 8f10c45f5cc8350b81b12753a629ffde2dbf8f9eb1eb715011e140e977b581d9
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/tests/Eval1Tests.hs:
+  hash: 0c5e5a3386974c2aa509c476a53100ae21258b4c2314582c65a5161b51cc9abd
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/tests/Main.hs:
+  hash: 5c871b66ff8f048e47c46bc4bc02afbf06e90c76a2960174d78c7dd085cc73c1
+/home/zoe/Escritorio/Facultad/Analisis de Lenguajes de Programación/TP1/tests/ParserTests.hs:
+  hash: dbcad0667a8db8cb8c97228a3e38f0bd038d1e64e87b57b639b5288cf96350d7
+/usr/include/stdc-predef.h:
+  hash: cb08cd5d4cc059a90833ac48a284d25016e8d56ded8ad4cd98d8ac59cc5053f3

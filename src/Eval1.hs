@@ -47,7 +47,7 @@ stepComm Skip                 = \s -> (Skip :!: s)
 stepComm (Let v e)            = letComm v e
 stepComm (Seq c0 c1)          = seqComm c0 c1
 stepComm (IfThen b c)         = ifThenElseComm b c Skip
-stepComm (RepeatUntil c b)    = repeatComm c b 
+stepComm r@(RepeatUntil c b)  = \s -> (Seq c (IfThenElse b Skip r) :!: s)
 stepComm (IfThenElse b c0 c1) = ifThenElseComm b c0 c1
 
 
@@ -65,17 +65,12 @@ ifThenElseComm b c0 c1 s = let (b' :!: s') = evalExp b s
                                c' = if b' then c0 else c1
                            in (c' :!: s')
 
-repeatComm :: Comm -> (Exp Bool) -> State -> Pair Comm State
-repeatComm c b s = let (b' :!: s') = evalExp b s
-                       c' = if b' then Skip else (RepeatUntil c b)
-                   in (c' :!: s')
-
 -- Evalúa una expresión
 -- Completar la definición
 evalExp :: Exp a -> State -> Pair a State
 evalExp BTrue         s = (True  :!: s)
 evalExp BFalse        s = (False :!: s)
-evalExp (Not p)       s = (!b :!: s') where (b :!: s') = evalExp p s
+evalExp (Not p)       s = (not b :!: s') where (b :!: s') = evalExp p s
 evalExp (Const  n)    s = (n :!: s) 
 evalExp (Var    x)    s = (lookfor x s :!: s) 
 evalExp (UMinus e)    s = (-n :!: s') where (n :!: s') = evalExp e s
