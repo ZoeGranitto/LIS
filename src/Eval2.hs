@@ -98,10 +98,10 @@ evalExp (Eq  e0 e1)   s = auxEvalExp e0 e1 s (==)
 evalExp (NEq e0 e1)   s = auxEvalExp e0 e1 s (/=)
 evalExp (And p0 p1)   s = auxEvalExp p0 p1 s (&&)
 evalExp (Or  p0 p1)   s = auxEvalExp p0 p1 s (||)
-evalExp (Plus  e0 e1) s = auxEvalExp e0 e1 s (+ )
+evalExp (Plus  e0 e1) s = auxEvalExp e0 e1 s (+)
 evalExp (Minus e0 e1) s = auxEvalExp e0 e1 s (-)
 evalExp (Times e0 e1) s = auxEvalExp e0 e1 s (*)
-evalExp (Div   e0 e1) s = divideExp e0 e1 s
+evalExp (Div   e0 e1) s = divideExp  e0 e1 s
 
 auxEvalExp :: Exp a -> Exp a -> State -> (a -> a -> b) -> Either Error (Pair b State)
 auxEvalExp a b s f = case evalExp a s of 
