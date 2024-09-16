@@ -12,24 +12,20 @@ import           Data.Strict.Tuple
 type State = (M.Map Variable Int, String)
 
 -- Estado vacío
--- Completar la definición
 initState :: State
 initState = (M.empty, [])
 
 -- Busca el valor de una variable en un estado
--- Completar la definición
 lookfor :: Variable -> State -> Either Error Int
 lookfor v (m,s) = case M.lookup v m of
   Nothing -> Left UndefVar
   Just a  -> Right a
 
 -- Cambia el valor de una variable en un estado
--- Completar la definición
 update :: Variable -> Int -> State -> State
-update k v (m,s) = addTrace ("Let " ++ k ++ " " ++ show v) (M.insert k v m, s)
+update k v (m,s) = addTrace ("Let " ++ k ++ " " ++ show v ++ ". ") (M.insert k v m, s)
 
 -- Agrega una traza dada al estado
--- Completar la definición
 addTrace :: String -> State -> State
 addTrace str (m,s) = (m, s ++ str)
 
@@ -46,7 +42,6 @@ stepCommStar c    s = do
  stepCommStar c' s'
  
 -- Evalúa un paso de un comando en un estado dado
--- Completar la definición
 stepComm :: Comm -> State -> Either Error (Pair Comm State)
 stepComm Skip                 = \s -> Right (Skip :!: s) 
 stepComm (Let v e)            = letComm v e
@@ -73,7 +68,6 @@ ifThenElseComm b c0 c1 s = case evalExp b s of
   Right (b' :!: s') -> (Right (c' :!: s')) where c' = if b' then c0 else c1
 
 -- Evalúa una expresión
--- Completar la definición
 evalExp :: Exp a -> State -> Either Error (Pair a State)
 evalExp BTrue         s = Right (True  :!: s)
 evalExp BFalse        s = Right (False :!: s)

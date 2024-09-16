@@ -163,23 +163,24 @@ boolfactor = try notParser
          <|> do reservedOp lis "true"; return BTrue
          <|> do reservedOp lis "false"; return BFalse
 
-
 boolterm :: Parser (Exp Bool)
 boolterm = chainl1 boolfactor andOp
 
 boolexp :: Parser (Exp Bool)
 boolexp = chainl1 boolterm orOp
 
------------------------------------
+------------------------------------
 --- Parser de comandos
------------------------------------
--- Parser general para comandos
+------------------------------------
+-- Llama a los distintos parsers de comandos según corresponda.
 command :: Parser Comm
 command = skip
       <|> letIn
       <|> repeatUntil
       <|> ifThenElse
 
+
+-- Parser general para comandos
 comm :: Parser Comm
 comm = chainl1 command seqOp
 
