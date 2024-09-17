@@ -46,14 +46,17 @@ lis = makeTokenParser
 -----------------------------------
 --- Parsers auxiliares para Exp Int
 -----------------------------------
+-- Parser de números naturales.
 natParser :: Parser (Exp Int)
 natParser = do n <- natural lis
                return (Const (fromInteger n))
 
+-- Parser de variables
 varParser :: Parser (Exp Int)
 varParser = do v <- identifier lis 
                return (Var v)
 
+-- Parser de inc y dec.
 varIncDecParser :: Parser (Exp Int)
 varIncDecParser = do (Var v) <- varParser
                      do reservedOp lis "++"
@@ -61,9 +64,11 @@ varIncDecParser = do (Var v) <- varParser
                         <|> do reservedOp lis "--"
                                return (VarDec v)
 
+-- Parser general de variables, maneja varInc y varDec.
 variableParser :: Parser (Exp Int)
 variableParser = try varIncDecParser <|> varParser
 
+-- Parser para números negativos.
 uminusParser :: Parser (Exp Int)
 uminusParser = do reservedOp lis "-"
                   e <- intexp
@@ -72,25 +77,36 @@ uminusParser = do reservedOp lis "-"
 ------------------------------------
 --- Parsers auxiliares para Exp Bool
 ------------------------------------
+-- Parser para el operador '!'
 notParser :: Parser (Exp Bool)
 notParser = do reservedOp lis "!"
-               b <- boolexp
+               b <- boolfactor
                return (Not b)
+
+-- Parser de operadores booleanos que reciben expresiones enteras. 
+comparisons :: Parser (Exp Bool)
+comparisons = do a <- intexp
+                 operator <- compOp
+                 b <- intexp
+                 return (operator a b)
 
 ---------------------------------
 --- Parsers auxiliares para Comm
 ---------------------------------
+-- Praser para el comando 'Skip'.
 skip :: Parser Comm
 skip = do reservedOp lis "skip"; return Skip
 
+-- Parser para el comando 'repeat-until'-
 repeatUntil :: Parser Comm
 repeatUntil = do
   reservedOp lis "repeat"
-  c <- braces lis comm  -- Parser del comando dentro del repeat
+  c <- braces lis comm  -- Parsea el comando dentro del repeat
   reservedOp lis "until"
-  cond <- boolexp -- Parser de la condición booleana
+  cond <- boolexp -- Parsea la condición booleana
   return (RepeatUntil c cond)
 
+-- Parser para el comando 'if-then-else'.
 ifThenElse :: Parser Comm
 ifThenElse = do reservedOp lis "if"
                 e <- boolexp
@@ -100,6 +116,7 @@ ifThenElse = do reservedOp lis "if"
                    return (IfThenElse e c1 c2)
                    <|> return (IfThen e c1)
 
+-- Parser para la asignación let.
 letIn:: Parser Comm
 letIn = do v <- identifier lis
            reservedOp lis "="
@@ -109,23 +126,29 @@ letIn = do v <- identifier lis
 -----------------------------------
 --- Funciones que reconocen operadores
 -----------------------------------
+-- Parser para los operadores '+' y '-'
 plusMinusOp :: Parser (Exp Int -> Exp Int -> Exp Int)
 plusMinusOp = do { reservedOp lis "+"; return Plus  }
           <|> do { reservedOp lis "-"; return Minus }
 
+-- Parser para los operadores '*' y '/'
 timesDivOp :: Parser (Exp Int -> Exp Int -> Exp Int)
 timesDivOp  = do { reservedOp lis "*"; return Times }
           <|> do { reservedOp lis "/"; return Div   }
 
+-- Parser para el operador '&&'
 andOp :: Parser (Exp Bool -> Exp Bool -> Exp Bool)
 andOp = do reservedOp lis "&&"; return And
 
+-- Parser para el operador '||'
 orOp :: Parser (Exp Bool -> Exp Bool -> Exp Bool)
 orOp = do reservedOp lis "||"; return Or
 
+-- Parser para el operador de secuenciación de comandos ';'
 seqOp :: Parser (Comm -> Comm -> Comm)
 seqOp = do reservedOp lis ";"; return Seq
 
+-- Parser para los operadores binarios de comparación de booleanos.
 compOp :: Parser (Exp Int -> Exp Int -> Exp Bool)
 compOp = do { reservedOp lis "=="; return Eq  }
      <|> do { reservedOp lis "!="; return NEq }
@@ -135,37 +158,46 @@ compOp = do { reservedOp lis "=="; return Eq  }
 -----------------------------------
 --- Parser de expresiones enteras
 -----------------------------------
+-- Parser que maneja la presencia de paréntesis, números enteros o variables.
 intfactor :: Parser (Exp Int)
-intfactor = try (parens lis intexp)
-            <|> try uminusParser 
-            <|> try natParser 
-            <|> try variableParser
+intfactor = (parens lis intexp)
+            <|> uminusParser 
+            <|> natParser 
+            <|> variableParser
 
+-- Parser para expresiones enteras que maneja multiplicación y división.
+-- Parseamos con chainl1 multiplicaciones y divisiones entre expresiones enteras,
+-- las cuales se parsean con intfactor.
 intterm :: Parser (Exp Int)
 intterm = chainl1 intfactor timesDivOp
 
+-- Parser para expresiones enteras que maneja suma y resta.
+-- Parseamos con chainl1 sumas y restas entre expresiones enteras,
+-- las cuales se parsean con intterm.
 intexp :: Parser (Exp Int)
 intexp = chainl1 intterm plusMinusOp
 
 ------------------------------------
 --- Parser de expresiones booleanas
 ------------------------------------
-comparisons :: Parser (Exp Bool)
-comparisons = do a <- intexp
-                 operator <- compOp
-                 b <- intexp
-                 return (operator a b)
-
+-- Parser para expresiones boolenas que maneja los operadores
+-- de comparación, los paréntesis y valores booleanos
+-- (true y false).
 boolfactor :: Parser (Exp Bool)
-boolfactor = try notParser 
-         <|> try comparisons 
-         <|> try (parens lis boolexp) 
+boolfactor = comparisons 
+         <|> (parens lis boolexp) 
          <|> do reservedOp lis "true"; return BTrue
          <|> do reservedOp lis "false"; return BFalse
 
+-- Parser para expresiones booleanas que maneja conjunción.
+-- Parseamos con chainl1 el operador '&&' entre expresiones booleanas,
+--las cuales se parsean con boolfactor.
 boolterm :: Parser (Exp Bool)
-boolterm = chainl1 boolfactor andOp
+boolterm = chainl1 (notParser <|> boolfactor) andOp
 
+-- Parser para expresiones booleanas que maneja disyunción.
+-- Parseamos con chainl1 el operador '||' entre expresiones booleanas,
+--las cuales se parsean con boolterm.
 boolexp :: Parser (Exp Bool)
 boolexp = chainl1 boolterm orOp
 
@@ -178,7 +210,6 @@ command = skip
       <|> letIn
       <|> repeatUntil
       <|> ifThenElse
-
 
 -- Parser general para comandos
 comm :: Parser Comm

@@ -1,0 +1,2 @@
+v = 3; 
+if v == 2 {skip} else {w = 5; x = w++}
